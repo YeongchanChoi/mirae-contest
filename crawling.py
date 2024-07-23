@@ -14,7 +14,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import pandas as pd
 
-# '종목.csv' 파일 읽기
 with open('종목.csv', 'r', encoding='utf-8') as csvfile:
     reader = csv.reader(csvfile)
     next(reader) 
@@ -25,20 +24,17 @@ options.add_argument("--headless")
 options.add_argument("--disable-gpu")
 options.add_argument("--window-size=1920x1080")
 
-# 웹 드라이버 설정
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-# 태그 제거
 def remove_tags(text):
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text)
 
-# 날짜 범위 생성
+# 날짜 범위
 start_date = datetime.strptime("2023-06-01", "%Y-%m-%d")
 end_date = datetime.strptime("2024-06-01", "%Y-%m-%d")
 date_range = [start_date + timedelta(days=x) for x in range((end_date - start_date).days)]
 
-# 각 종목에 대해 뉴스 검색 수행 및 저장
 for stock_name in stock_names:
     print(f"Processing stock: {stock_name}")
     all_articles = []
@@ -50,7 +46,6 @@ for stock_name in stock_names:
         
         driver.get(url)
 
-        # 기사가 있는지 확인
         try:
             WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.group_news > ul.list_news')))
         except:
@@ -73,7 +68,6 @@ for stock_name in stock_names:
         if articles:
             all_articles.extend(articles)
 
-    # 크롤링한 데이터를 저장
     if all_articles:
         df = pd.DataFrame(all_articles, columns=["날짜", "제목", "내용"])
         folder_path = os.path.join("crawling", stock_name)
